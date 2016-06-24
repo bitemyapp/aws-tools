@@ -58,6 +58,7 @@ buildConfigFromPaths fp = convertErrors <$> runErrorT tryParsing
     tryParsing = do
       cp  <- foldlM (readInConfig) emptyCP fp
       ConfigFile <$> get cp "DEFAULT" "number_of_instances"
+                 <*> get cp "DEFAULT" "wait_to_running_sec"
                  <*> get cp "DEFAULT" "key_pair_name"
                  <*> get cp "DEFAULT" "ami"
                  <*> get cp "DEFAULT" "subnet"

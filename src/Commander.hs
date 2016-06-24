@@ -55,6 +55,17 @@ someFunc = void $ do
 
   runAWSWithEnv awsEnv . runCommander config state $ do
     $(logTM) InfoS "Starting"
+    createInstances 
+
+    $(logTM) InfoS "Instances ready."
+
+    $(logTM) InfoS "Terminating Instances"
+    terminateInstancesInState
+
+    $(logTM) InfoS "Instances Terminated"
+    $(logTM) InfoS "Stopping"
+
+
   
 runAWSWithEnv :: Env -> AWS a -> IO a
 runAWSWithEnv env = runResourceT . runAWS env

@@ -14,3 +14,6 @@ subnet: "subnet-b797f7c0"
 instance_type: "t1.micro"
 
 iam_role: "S3Read"
+
+# seconds to wait until running
+wait_to_running_sec: 30

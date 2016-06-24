@@ -32,19 +32,22 @@ import Katip
 import Commander.Types
 import Commander.EC2.SecurityGroup
 
+import Debug.Trace
+
 installPlebScript :: Text
-installPlebScript = ""
+installPlebScript = "echo Hello World"
 
 -- | Checks to see if the instances stored in local state are running
 allInstancesAreReady :: forall m . (MonadAWS m, MonadState AppState m) => m Bool
-allInstancesAreReady =  areStatesRunning <$> (instanceStatuses =<< getInstanceIdsInState)
+allInstancesAreReady = areInstancesRunning . getStates <$> (instanceStatuses =<< getInstanceIdsInState)
   where
-    areStatesRunning = all (ISNRunning ==) . getStates
+    areInstancesRunning [] = False
+    areInstancesRunning xs = all (ISNRunning ==) xs
 
     getStates :: DescribeInstanceStatusResponse -> [InstanceStateName] 
     getStates r = r ^.. disrsInstanceStatuses . traverse . isInstanceState . _Just . isName
 
-    instanceStatuses :: [Text] -> m (DescribeInstanceStatusResponse)
+    instanceStatuses :: [Text] -> m DescribeInstanceStatusResponse
     instanceStatuses xs = send $ describeInstanceStatus & disInstanceIds .~ xs
 
 -- | Gets the InstanceIds from the instances held in AppState
@@ -54,8 +57,8 @@ getInstanceIdsInState = fmap (view insInstanceId) <$> use ec2Instances
 getInstanceState :: Instance -> InstanceStateName
 getInstanceState i = i ^. (insState . isName)
 
-isInstanceReady :: Instance -> Bool
-isInstanceReady = (ISNRunning ==) . getInstanceState
+isInstanceStateEq :: InstanceStateName -> Instance -> Bool
+isInstanceStateEq s = (s ==) . getInstanceState
 
 updateInstances :: (MonadAWS m, MonadState AppState m, KatipContext m) => m ()
 updateInstances = do
@@ -63,30 +66,32 @@ updateInstances = do
   response    <- send $ describeInstances & diiInstanceIds .~ instanceIds
   ec2Instances .= response ^. dirsReservations . traverse . rInstances
 
-waitUntilInstancesAreRunning :: (MonadAWS m, MonadState AppState m, KatipContext m) => m ()
+waitUntilInstancesAreRunning :: (MonadAWS m, MonadReader AppConfig m, MonadState AppState m, KatipContext m) => m ()
 waitUntilInstancesAreRunning = do
   allRunning <- allInstancesAreReady
-  $(logTM) InfoS "Instances are not ready... waiting 30 seconds."
-
+  secs <- view $ configFile . waitToRunningSec
+  liftIO $ putStrLn . show $ allRunning
   if allRunning then return ()
   else do
-      liftIO $ threadDelay (30 * 1000000) 
-      waitUntilInstancesAreRunning
+    $(logTM) InfoS "Instances are not ready... waiting..."
+    liftIO $ threadDelay (secs * 1000000)
+    waitUntilInstancesAreRunning
 
 -- | Create instances to run jobs on. Install Pleb.
-createInstances :: (MonadAWS m, MonadIO m, MonadReader AppConfig m, MonadState AppState m, KatipContext m) => Int -> m ()
-createInstances numberOfInstances = do
+createInstances :: (MonadAWS m, MonadIO m, MonadReader AppConfig m, MonadState AppState m, KatipContext m) => m ()
+createInstances = do
   uuid    <- use sessionId
-  ami     <- view (configFile . amiIdentifier)
-  sgId    <- view sgGroupId <$> getCommanderSecurityGroup
-  snetId  <- view (configFile . subnetIdentifier)
-  role    <- view (configFile . iamRole)
-  keyName <- view (configFile . keyPairName)
+  --sgId    <- view sgGroupId <$> getCommanderSecurityGroup
+  ami     <- view $ configFile . amiIdentifier
+  snetId  <- view $ configFile . subnetIdentifier
+  role    <- view $ configFile . iamRole
+  keyName <- view $ configFile . keyPairName
+  num     <- view $ configFile . numberOfInstances
 
   let iamr    = iamInstanceProfileSpecification & iapsName ?~ role
-  let request = runInstances ami numberOfInstances numberOfInstances
+  let request = runInstances ami num num
 
-  reservation <- send $ request & rSecurityGroupIds  <>~ [sgId]
+  reservation <- send $ request -- & rSecurityGroupIds  <>~ [sgId]
                                 & rKeyName            ?~ keyName
                                 & rSubnetId           ?~ snetId
                                 & rIAMInstanceProfile ?~ iamr
@@ -96,4 +101,12 @@ createInstances numberOfInstances = do
   waitUntilInstancesAreRunning
   updateInstances
 
+  -- Need to give each instance a name tag
 
+terminateInstancesInState :: (MonadAWS m, MonadIO m, MonadState AppState m, KatipContext m) => m ()
+terminateInstancesInState = do
+  instanceIds <- getInstanceIdsInState
+  send $ terminateInstances & tiInstanceIds .~ instanceIds
+
+  -- clear instance state
+  ec2Instances .= mempty

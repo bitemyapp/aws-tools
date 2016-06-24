@@ -29,12 +29,13 @@ data ConfigError = NoConfigurationFilesFoundError
                  | ConfigurationCouldNotParseError Text
   deriving (Show)
 
-data ConfigFile = ConfigFile { _numberOfInstances :: Int
-                             , _keyPairName       :: Text
-                             , _amiIdentifier     :: Text
-                             , _subnetIdentifier  :: Text
-                             , _instanceType      :: Text
-                             , _iamRole           :: Text
+data ConfigFile = ConfigFile { _numberOfInstances   :: Int
+                             , _waitToRunningSec    :: Int
+                             , _keyPairName         :: Text
+                             , _amiIdentifier       :: Text
+                             , _subnetIdentifier    :: Text
+                             , _instanceType        :: Text
+                             , _iamRole             :: Text
                              } deriving (Show)
 makeLenses ''ConfigFile
 
