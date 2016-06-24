@@ -44,8 +44,8 @@ data AppConfig = AppConfig { _configFile :: ConfigFile }
 makeLenses ''AppConfig
 
 
-data AppState = AppState { _ec2Instances  :: [Instance]
-                         , _sessionId     :: Text
+data AppState = AppState { _ec2Instances   :: [Instance]
+                         , _sessionId      :: Text
                          , _katipContext   :: LogContexts
                          , _katipLogEnv    :: LogEnv
                          , _katipNamespace :: Namespace
