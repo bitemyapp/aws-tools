@@ -1,0 +1,16 @@
+[DEFAULT]
+number_of_instances: 2
+
+key_pair_name: "commander"
+
+ami: "ami-9abea4fb"
+
+#Don't have a reason to use the vpc id yet...
+#vpc: "vpc-8ec3b0eb"
+
+subnet: "subnet-b797f7c0"
+
+#instance names must be lowercase 
+instance_type: "t1.micro"
+
+iam_role: "S3Read"

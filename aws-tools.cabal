@@ -1,0 +1,58 @@
+name:                aws-tools
+version:             0.1.0.0
+synopsis:            Collection of tools for building aws automations.
+description:         Please see README.md
+homepage:            https://github.com/trevorbasinger/aws-tools#readme
+license:             MIT
+license-file:        LICENSE
+author:              Trevor Basinger
+maintainer:          trevor.basinger@gmail.com
+copyright:           2016 Trevor Basinger
+category:            Web
+build-type:          Simple
+-- extra-source-files:
+cabal-version:       >=1.10
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Commander
+                     , Commander.Conf
+                     , Commander.EC2
+                     , Commander.EC2.SecurityGroup
+                     , Commander.Types
+  build-depends:       base              >= 4.7 && < 5
+                     , text              >= 1.2.2.1
+                     , ConfigFile        >= 1.1.4
+                     , mtl               >= 2.2.1
+                     , transformers      >= 0.4.2.0
+                     , transformers-base >= 0.4.4
+                     , lens              >= 4.13
+                     , directory         >= 1.2.2.0
+                     , katip             >= 0.2.0.0
+                     , amazonka
+                     , amazonka-ec2
+                     , exceptions        >= 0.8.2.1
+                     , resourcet         >= 1.1.7.4
+                     , uuid              >= 1.3.12
+  default-language:    Haskell2010
+
+executable aws-commander
+  hs-source-dirs:      app/Commander
+  main-is:             Main.hs
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  build-depends:       base
+                     , aws-tools
+  default-language:    Haskell2010
+
+test-suite aws-tools-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  build-depends:       base
+                     , aws-tools
+  ghc-options:         -threaded -rtsopts -with-rtsopts=-N
+  default-language:    Haskell2010
+
+source-repository head
+  type:     git
+  location: https://github.com/trevorbasinger/aws-tools
