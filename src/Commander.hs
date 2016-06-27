@@ -40,7 +40,8 @@ namespace =  Namespace ["Commander"]
 
 someFunc :: IO ()
 someFunc = void $ do
--- Get default config environment unless specified otherwise by command line args
+  -- Get default config environment unless specified otherwise by command line args
+  -- Need to add cmdline switch for non-default configs
   confFile <- getConfigOrExit
   scribe   <- mkHandleScribe ColorIfTerminal stdout InfoS V3
   le       <- registerScribe "stdout" scribe <$> initLogEnv namespace developmentEnv
