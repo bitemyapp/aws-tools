@@ -29,7 +29,8 @@ data ConfigError = NoConfigurationFilesFoundError
                  | ConfigurationCouldNotParseError Text
   deriving (Show)
 
-data ConfigFile = ConfigFile { _numberOfInstances   :: Int
+data ConfigFile = ConfigFile { _awsRegion           :: Region
+                             , _numberOfInstances   :: Int
                              , _waitToRunningSec    :: Int
                              , _keyPairName         :: Text
                              , _amiIdentifier       :: Text

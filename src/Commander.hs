@@ -44,7 +44,7 @@ someFunc = void $ do
   confFile <- getConfigOrExit
   scribe   <- mkHandleScribe ColorIfTerminal stdout InfoS V3
   le       <- registerScribe "stdout" scribe <$> initLogEnv namespace developmentEnv
-  awsEnv   <- newEnv Oregon Discover
+  awsEnv   <- newEnv (confFile ^. awsRegion) Discover
   uuid     <- toText <$> nextRandom
 
   let state :: AppState

@@ -1,4 +1,6 @@
 [DEFAULT]
+aws_region: "us-west-2"
+
 number_of_instances: 2
 
 key_pair_name: "commander"

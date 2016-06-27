@@ -81,7 +81,7 @@ waitUntilInstancesAreRunning = do
 createInstances :: (MonadAWS m, MonadIO m, MonadReader AppConfig m, MonadState AppState m, KatipContext m) => m ()
 createInstances = do
   uuid    <- use sessionId
-  --sgId    <- view sgGroupId <$> getCommanderSecurityGroup
+  sgId    <- getCommanderSecurityGroupId
   ami     <- view $ configFile . amiIdentifier
   snetId  <- view $ configFile . subnetIdentifier
   role    <- view $ configFile . iamRole
@@ -91,7 +91,7 @@ createInstances = do
   let iamr    = iamInstanceProfileSpecification & iapsName ?~ role
   let request = runInstances ami num num
 
-  reservation <- send $ request -- & rSecurityGroupIds  <>~ [sgId]
+  reservation <- send $ request & rSecurityGroupIds  <>~ [sgId]
                                 & rKeyName            ?~ keyName
                                 & rSubnetId           ?~ snetId
                                 & rIAMInstanceProfile ?~ iamr
