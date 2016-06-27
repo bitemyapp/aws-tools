@@ -29,15 +29,17 @@ data ConfigError = NoConfigurationFilesFoundError
                  | ConfigurationCouldNotParseError Text
   deriving (Show)
 
-data ConfigFile = ConfigFile { _awsRegion           :: Region
+data ConfigFile = ConfigFile { _awsRegion           :: Text
                              , _numberOfInstances   :: Int
                              , _waitToRunningSec    :: Int
                              , _keyPairName         :: Text
                              , _amiIdentifier       :: Text
                              , _subnetIdentifier    :: Text
+                             , _awsSGCidr           :: Text
+                             , _awsSGPort           :: Int
                              , _instanceType        :: Text
                              , _iamRole             :: Text
-                             } deriving (Show)
+                             } deriving (Show, Read)
 makeLenses ''ConfigFile
 
 

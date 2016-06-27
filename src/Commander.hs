@@ -22,6 +22,7 @@ import Data.UUID.V4 (nextRandom)
 import Data.Text (Text)
 import qualified Data.Text    as Text
 import qualified Data.Text.IO as Text
+import qualified Network.AWS.Data.Text as Text
 
 import System.IO
 
@@ -45,7 +46,7 @@ someFunc = void $ do
   confFile <- getConfigOrExit
   scribe   <- mkHandleScribe ColorIfTerminal stdout InfoS V3
   le       <- registerScribe "stdout" scribe <$> initLogEnv namespace developmentEnv
-  awsEnv   <- newEnv (confFile ^. awsRegion) Discover
+  awsEnv   <- newEnv (either (const Oregon) (id) . Text.fromText $ confFile ^. awsRegion) Discover
   uuid     <- toText <$> nextRandom
 
   let state :: AppState
