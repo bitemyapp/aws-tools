@@ -12,6 +12,7 @@ import Control.Lens
 import Control.Monad
 import Control.Monad.IO.Class
 import Control.Monad.State
+import Control.Monad.Reader
 
 import Control.Monad.Trans.Error
 import Control.Monad.Trans.Resource
@@ -24,6 +25,7 @@ import qualified Data.Text    as Text
 import qualified Data.Text.IO as Text
 import qualified Network.AWS.Data.Text as Text
 
+import System.Exit
 import System.IO
 
 import Network.AWS
@@ -39,6 +41,13 @@ productionEnv  = Environment "Production"
 namespace :: Namespace
 namespace =  Namespace ["Commander"]
 
+-- | Will exit if it can't parse the region from the text file
+getRegionOrExit :: ConfigFile -> IO Region
+getRegionOrExit c =
+  case Text.fromText $ c ^. awsRegion of
+    Right region -> return region
+    Left _       -> exitFailure
+
 someFunc :: IO ()
 someFunc = void $ do
   -- Get default config environment unless specified otherwise by command line args
@@ -46,7 +55,8 @@ someFunc = void $ do
   confFile <- getConfigOrExit
   scribe   <- mkHandleScribe ColorIfTerminal stdout InfoS V3
   le       <- registerScribe "stdout" scribe <$> initLogEnv namespace developmentEnv
-  awsEnv   <- newEnv (either (const Oregon) (id) . Text.fromText $ confFile ^. awsRegion) Discover
+  region   <- getRegionOrExit confFile
+  awsEnv   <- newEnv region Discover
   uuid     <- toText <$> nextRandom
 
   let state :: AppState
