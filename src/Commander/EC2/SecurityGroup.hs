@@ -25,9 +25,7 @@ checkToSeeIfSecurityGroupNameExists name = do
 createCommanderSecurityGroup :: (MonadAWS m) => Text -> m Text
 createCommanderSecurityGroup name = do
   response <- send $ createSecurityGroup name ""
-  let sgid :: Text 
-      sgid = response ^. csgrsGroupId
-  return $ sgid
+  return $ response ^. csgrsGroupId
 
 getCommanderSecurityGroupId :: (MonadAWS m) => m Text
 getCommanderSecurityGroupId = createGroupIfNotExists =<< checkToSeeIfSecurityGroupNameExists commanderSGName 
