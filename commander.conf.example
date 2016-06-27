@@ -11,6 +11,8 @@ ami: "ami-9abea4fb"
 #vpc: "vpc-8ec3b0eb"
 
 subnet: "subnet-b797f7c0"
+sg_port: 16855
+sg_cidr: "0.0.0.0/24"
 
 #instance names must be lowercase 
 instance_type: "t1.micro"
